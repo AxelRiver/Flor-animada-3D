@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#ff6ec7"/>
+  <meta name="description" content="Flor 3D interactiva con mensajes y música para alguien especial ❤️"/>
+  
+  <title>Flor 3D - Dedicatoria</title>
+  
+  <!-- Reset básico -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"/>
+  
+  <!-- Manifest para PWA -->
+  <link rel="manifest" href="./manifest.json"/>
+  
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+
+    body {
+      background-image: 
+        linear-gradient(#0f0f0f 1px, transparent 1px),
+        linear-gradient(to right, #0f0f0f 1px, transparent 1px);
+      background-size: 3.333vmin 3.333vmin;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    #main-content {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Botón inicial */
+    #start-btn-container {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .container {
+      position: relative;
+      padding: 3px;
+      background: linear-gradient(90deg, #ff6ec7, #7873f5);
+      border-radius: 0.9em;
+      transition: all 0.4s ease;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      border-radius: 0.9em;
+      z-index: -1;
+      filter: blur(0);
+      transition: filter 0.4s ease;
+      background: linear-gradient(90deg, #ff6ec7, #7873f5);
+    }
+
+    .container:hover::before {
+      filter: blur(1.2em);
+    }
+
+    .container:active::before {
+      filter: blur(0.2em);
+    }
+
+    .button {
+      font-size: 1.6em;
+      padding: 0.7em 1.2em;
+      border: none;
+      border-radius: 0.6em;
+      background: #000;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 2px 2px 6px #00000088;
+      min-width: 220px;
+      text-align: center;
+    }
+
+    @media (min-width: 1025px) {
+      .button {
+        font-size: 2.3em;
+        padding: 1em 1.8em;
+      }
+    }
+
+    /* Flor 3D */
+    .wrapper {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 10vmin;
+      height: 10vmin;
+      font-size: 10vmin;
+      transform: rotateX(-45deg);
+      transform-style: preserve-3d;
+      animation: move-left 1.5s cubic-bezier(0.7,0,0.3,1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes move-left {
+      to { transform: rotateX(-45deg) translateX(-20vw); }
+    }
+
+    @keyframes move-up {
+      to { transform: rotateX(-45deg) translateY(-15vh); }
+    }
+
+    .flower {
+      width: 100%;
+      height: 100%;
+      animation: rotate-flower 30s linear infinite;
+      transform-style: preserve-3d;
+    }
+
+    @keyframes rotate-flower {
+      to { transform: rotateY(360deg); }
+    }
+
+    .flower::before {
+      content: "";
+      position: absolute;
+      inset: 5%;
+      margin: auto;
+      background: radial-gradient(circle, hsl(340,80%,85%) 0%, hsl(320,70%,65%) 60%, hsl(0,12%,75%) 100%);
+      border-radius: 50%;
+      transform: rotateX(90deg);
+    }
+
+    .petal {
+      position: absolute;
+      z-index: 20;
+      bottom: 80%;
+      left: -10vmin;
+      transform-style: preserve-3d;
+      transform-origin: bottom;
+    }
+
+    .box {
+      width: 30vmin;
+      transform-style: preserve-3d;
+      transform-origin: bottom;
+      animation: rotate-box 12s infinite;
+    }
+
+    @keyframes rotate-box {
+      0%,15%,100%  { transform: rotateX(3.5deg);  }
+      50%,80%      { transform: rotateX(-7deg);  }
+    }
+
+    .shape {
+      width: 0.5em;
+      height: 0.5em;
+      margin: auto;
+      background: currentColor;
+      box-shadow: 
+        0.5em  0 0 0 currentColor,
+        1em    0 0 0 currentColor,
+       -1em    0 0 0 currentColor,
+       -0.5em  0 0 0 currentColor;
+      border-radius: 50%;
+    }
+
+    /* Mensaje */
+    .flower-message {
+      position: absolute;
+      top: 50%;
+      left: calc(50vw + 16vmin);
+      transform: translateY(-50%);
+      color: #fff;
+      font-family: 'Segoe UI Black', 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      font-size: 5.5vmin;
+      z-index: 100;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.8s;
+      pointer-events: none;
+    }
+
+    /* Canvas galaxia / partículas */
+    #galaxy-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 1.2s;
+    }
+
+    /* Media Queries – responsividad */
+    @media (max-width: 480px) {
+      .wrapper {
+        width: 25vmin !important;
+        height: 25vmin !important;
+        font-size: 15vmin !important;
+        animation: move-up 1.2s cubic-bezier(.7,0,.3,1) forwards !important;
+        left: 50% !important;
+        transform: translateX(-50%) rotateX(-45deg) !important;
+      }
+      .flower-message {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 12vh !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        white-space: normal !important;
+        font-size: 7.5vmin !important;
+        text-align: center !important;
+        max-width: 92vw !important;
+        line-height: 1.25;
+      }
+    }
+
+    @media (min-width: 481px) and (max-width: 768px) {
+      .wrapper {
+        width: 20vmin !important;
+        height: 20vmin !important;
+        font-size: 12vmin !important;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .wrapper {
+        width: 15vmin !important;
+        height: 15vmin !important;
+        font-size: 10vmin !important;
+      }
+    }
+
+    @media (min-width: 1025px) {
+      .wrapper {
+        width: 12vmin !important;
+        height: 12vmin !important;
+        font-size: 8vmin !important;
+      }
+      .flower-message {
+        font-size: 6vmin !important;
+        left: calc(50vw + 28vmin) !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="main-content">
+  <div id="start-btn-container">
+    <div class="container">
+      <button id="start-btn" class="button"></button>
+    </div>
+  </div>
+
+  <!-- 
+    Nota: Asegúrate de que el archivo de música esté en la misma carpeta que index.html
+    o ajusta la ruta (ejemplo: src="./musica/Juanes - Es Por Ti.mp3")
+  -->
+  <audio id="bg-music" preload="none">
+    <source src="Juanes - Es Por Ti (Official Music Video).mp3" type="audio/mpeg">
+  </audio>
+
+  <canvas id="galaxy-canvas"></canvas>
+
+  <div class="wrapper" style="display:none;">
+    <div class="flower"></div>
+  </div>
+
+  <div class="flower-message" style="display:none;"></div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+const messages = [
+  "Esta flor es para ti",
+  "ERES MI MUNDO",
+  "Gracias por todo",
+  "¡Eres especial!",
+  "¡TE AMO ❤️!"
+];
+
+let currentMsgIndex = 0;
+
+const flower      = document.querySelector('.flower');
+const wrapper     = document.querySelector('.wrapper');
+const messageEl   = document.querySelector('.flower-message');
+const startBtn    = document.getElementById('start-btn');
+const startCont   = document.getElementById('start-btn-container');
+const music       = document.getElementById('bg-music');
+const galaxyCanvas = document.getElementById('galaxy-canvas');
+
+// Efecto typing en botón inicial
+let btnText = "Presióname";
+startBtn.textContent = "";
+startBtn.disabled = true;
+let i = 0;
+function typeButton() {
+  if (i < btnText.length) {
+    startBtn.textContent += btnText[i];
+    i++;
+    setTimeout(typeButton, 80);
+  } else {
+    startBtn.disabled = false;
+  }
+}
+typeButton();
+
+// Crear flor 3D
+function createFlower() {
+  const maxPetals = 6;
+  const maxParts  = 20;
+  const partsFontStep = 25 / maxParts;
+  const angle = 360 / maxPetals;
+
+  for (let i = 0; i < maxPetals; i++) {
+    const petal = createPetal(maxParts, partsFontStep);
+    const currAngle = angle * i;
+    petal.style.transform = `rotateY(${currAngle}deg) rotateX(-30deg) translateZ(9vmin)`;
+    flower.appendChild(petal);
+  }
+}
+
+function createPetal(maxParts, partsFontStep) {
+  let box = createBox(null, 0, maxParts, partsFontStep);
+  for (let i = 1; i <= maxParts; i++) {
+    box = createBox(box, i, maxParts, partsFontStep);
+  }
+  const petal = document.createElement('div');
+  petal.className = 'petal';
+  petal.appendChild(box);
+  return petal;
+}
+
+function createBox(prevBox, pos, maxParts, partsFontStep) {
+  let fontSize = partsFontStep * (maxParts - pos) + 'vmin';
+  const half = maxParts / 2;
+  let bright = '50';
+
+  if (pos < half + 1) {
+    fontSize = partsFontStep * pos + 'vmin';
+  } else {
+    bright = 10 + 40 / half * (maxParts - pos);
+  }
+
+  const hue = 320 + (30 * pos / maxParts);
+  const sat = 70 + (20 * pos / maxParts);
+  const color = `hsl(${hue}, ${sat}%, ${bright}%)`;
+
+  const shape = document.createElement('div');
+  shape.className = 'shape';
+
+  const box = document.createElement('div');
+  box.className = 'box';
+  box.style.color = color;
+  box.style.fontSize = fontSize;
+
+  if (prevBox) box.appendChild(prevBox);
+  box.appendChild(shape);
+
+  return box;
+}
+
+// Partículas / galaxia reactiva al audio
+let dots = [];
+let analyser, dataArray;
+
+function initGalaxy() {
+  const ctx = galaxyCanvas.getContext('2d');
+  galaxyCanvas.width  = window.innerWidth;
+  galaxyCanvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    galaxyCanvas.width  = window.innerWidth;
+    galaxyCanvas.height = window.innerHeight;
+  });
+
+  const isMobile = window.innerWidth <= 600;
+  const numDots = isMobile ? 40 : 90;
+  const minSize = isMobile ? 0.6 : 0.9;
+  const maxSize = isMobile ? 1.4 : 2.0;
+
+  dots = [];
+  for (let i = 0; i < numDots; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.random() * (Math.min(galaxyCanvas.width, galaxyCanvas.height) * 0.45);
+    const x = galaxyCanvas.width / 2 + Math.cos(angle) * radius;
+    const y = galaxyCanvas.height / 2 + Math.sin(angle) * radius;
+    const speed = 0.3 + Math.random() * 0.9;
+    const dir = Math.random() * Math.PI * 2;
+    dots.push({
+      x, y,
+      r: minSize + Math.random() * (maxSize - minSize),
+      dx: Math.cos(dir) * speed,
+      dy: Math.sin(dir) * speed,
+      alpha: 0.4 + Math.random() * 0.5
+    });
+  }
+
+  // Intentar conectar analizador de audio
+  if (window.AudioContext && music) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaElementSource(music);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    let speedFactor = 1;
+    if (analyser && dataArray) {
+      analyser.getByteFrequencyData(dataArray);
+      const avg = dataArray.reduce((a,b)=>a+b,0) / dataArray.length;
+      speedFactor = 0.6 + (avg/255)*2.8;
+    }
+
+    dots.forEach(dot => {
+      ctx.beginPath();
+      ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI*2);
+      ctx.fillStyle = `hsla(330, 85%, 75%, ${dot.alpha})`;
+      ctx.shadowColor = `hsla(330,85%,75%,0.6)`;
+      ctx.shadowBlur = 2;
+      ctx.fill();
+
+      dot.x += dot.dx * speedFactor;
+      dot.y += dot.dy * speedFactor;
+
+      if (dot.x < 0) dot.x = ctx.canvas.width;
+      if (dot.x > ctx.canvas.width) dot.x = 0;
+      if (dot.y < 0) dot.y = ctx.canvas.height;
+      if (dot.y > ctx.canvas.height) dot.y = 0;
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function typeText(text, callback) {
+  messageEl.textContent = '';
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      messageEl.textContent += text.charAt(i++);
+      setTimeout(type, 70);
+    } else if (callback) {
+      setTimeout(callback, 1200);
+    }
+  }
+  type();
+}
+
+function showMessages() {
+  if (currentMsgIndex >= messages.length) {
+    animateHeart();
+    return;
+  }
+  typeText(messages[currentMsgIndex], () => {
+    currentMsgIndex++;
+    showMessages();
+  });
+}
+
+function animateHeart() {
+  const rect = messageEl.getBoundingClientRect();
+  const centerX = galaxyCanvas.width / 2;
+  const centerY = rect.bottom - galaxyCanvas.getBoundingClientRect().top + 60;
+  const size = Math.min(galaxyCanvas.width, galaxyCanvas.height) / 8;
+
+  const heartPoints = dots.map((_, i) => {
+    const t = Math.PI * 2 * (i / dots.length);
+    return {
+      x: centerX + size * 16 * Math.pow(Math.sin(t), 3),
+      y: centerY - size * (13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t))
+    };
+  });
+
+  let step = 0;
+  const totalSteps = 16;
+
+  function move() {
+    dots.forEach((dot, i) => {
+      const target = heartPoints[i];
+      dot.x += (target.x - dot.x) / (totalSteps - step + 1);
+      dot.y += (target.y - dot.y) / (totalSteps - step + 1);
+    });
+    step++;
+    if (step <= totalSteps) requestAnimationFrame(move);
+  }
+  move();
+}
+
+// ─── Evento principal ───
+startBtn.addEventListener('click', () => {
+  startCont.style.display = 'none';
+  wrapper.style.display = '';
+
+  // Música (con manejo de interacción del usuario requerida por navegadores modernos)
+  music.currentTime = 0;
+  const playPromise = music.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(err => {
+      console.warn("No se pudo reproducir audio automáticamente:", err);
+      // Muchos navegadores requieren interacción previa del usuario
+    });
+  }
+
+  // Galaxia
+  setTimeout(() => {
+    galaxyCanvas.style.opacity = '1';
+    initGalaxy();
+  }, 1800);
+
+  // Mensajes
+  messageEl.style.display = '';
+  setTimeout(() => {
+    messageEl.style.opacity = '1';
+    showMessages();
+  }, 2200);
+});
+
+// Inicializar flor al cargar
+createFlower();
+
+// Registrar Service Worker para PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => {
+        console.log('Service Worker registrado correctamente', reg.scope);
+      })
+      .catch(err => {
+        console.error('Fallo al registrar Service Worker:', err);
+      });
+  });
+}
+
+console.clear();
+</script>
+</body>
+</html>

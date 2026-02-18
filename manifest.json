@@ -1,0 +1,28 @@
+{
+  "name": "Flor 3D - Te Amo",
+  "short_name": "Flor para ti",
+  "description": "Una flor 3D interactiva con música y mensajes especiales solo para alguien muy importante ❤️",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ff6ec7",
+  "icons": [
+    {
+      "src": "1.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "2.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["personalization", "entertainment"],
+  "lang": "es",
+  "dir": "ltr"
+}
